@@ -1,2 +1,2 @@
-# ear-uci
+# EAR-UCI
 Environmental Audio Recognition
