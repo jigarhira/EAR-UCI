@@ -17,10 +17,6 @@ class Audio:
     DURATION = 3.0          # seconds
     MONO = True             # channels
 
-
-    def __init__(self) -> None:
-        pass
-
     
     @classmethod
     def load_sample(self, path: str, offset=0.0) -> Tuple[np.ndarray, int]:
