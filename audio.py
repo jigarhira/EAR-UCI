@@ -26,7 +26,7 @@ class Audio:
 
         Args:
             path (str): File path.
-            offset (float, optional): Start reading audio after this time (seconds). Defaults to 0.0.
+            offset (float): Start reading audio after this time (seconds). Defaults to 0.0.
 
         Returns:
             np.ndarray: Numpy array audio time series.
@@ -48,8 +48,9 @@ class Audio:
     @classmethod
     def record_sample(self) -> np.ndarray:
         """Records audio.
-            Returns:
-                np.ndarray: Numpy array audio time series.
+
+        Returns:
+            np.ndarray: Numpy array audio time series.
         """
         sampled_audio = sd.rec(int(self.DURATION*self.SAMPLING_RATE), samplerate=self.SAMPLING_RATE, channels=1)
         sd.wait()
@@ -58,10 +59,12 @@ class Audio:
     @classmethod
     def gen_spec(self, signal: np.ndarray) -> np.ndarray:
         """Generates log-based mel-spectrogram time series array.
-            Args:
-                signal (np.ndarray): Numpy array audio time series. 
-            Returns:
-                np.ndarray: Numpy array mel-spectrogram.
+
+        Args:
+            signal (np.ndarray): Numpy array audio time series. 
+            
+        Returns:
+            np.ndarray: Numpy array mel-spectrogram.
         """
         spec = librosa.feature.melspectrogram(signal, sr=self.SAMPLING_RATE, n_fft=self.N_FFT, hop_length=self.HOP_LENGTH, n_mels=self.N_MELS)
         spec = librosa.power_to_db(spec, ref=np.max)
