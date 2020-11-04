@@ -7,6 +7,7 @@ Author: Ian Flores
 """
 
 from sklearn.model_selection import train_test_split
+import os
 import tensorflow as tf
 import matplotlib as plt
 import numpy as np
@@ -14,11 +15,48 @@ from tensorflow import keras
 from tensorflow.keras import utils
 from tensorflow.keras import model
 from tensorflow.keras import layers
-from keras.layers.normalization import BatchNormalization
+from tensorflow.keras.layers.normalization import BatchNormalization
+from tensorflow.keras.presprocessing import image
 
 #Load the data
 ##NEED TO FIGURE OUT LOADING PROCEDURE##
 ##NEED TO FINALIZE INPUT DIMENSIONS##
+WIDTH = 128
+HEIGHT = 130
+
+PATH = os.getcwd()
+training_data_path = PATH+'/data/train'
+train_x = []
+train_y = []
+for fold in training_data_path:
+    fold_path = data_path + fold
+    for sample in fold:
+        img_path = fold_path + sample
+        x = image.load_img(img_path)
+        x_name = os.path.basename(image)
+        x_type = x_name[-1]
+        train_x.append(x)
+        train_y.append(x_type)
+
+validation_data_path = PATH+'/data/validation'
+validation_batch = os.listdir(validation_path)
+test_x = []
+test_y = []
+for fold in validation_data_path:
+    fold_path = validation_data_path + fold
+    for sample in fold:
+        img_path = fold_path + sample
+        x = image.load_img(img_path)
+        x_name = os.path.basename(image)
+        x_type = x_name[-1]
+        test_x.append(x)
+        test_y.append(x_type)
+
+#convert data to numpy array
+train_x = np.array(train_x)
+train_y = np.array(train_y)
+test_x = np.array(test_x)
+test_y = np.array(test_y)
 
 #Print data shape
 print('Training data shape : ', train_X.shape, train_Y.shape)
@@ -47,8 +85,8 @@ plt.imshow(test_X[0,:,:], cmap='gray')
 plt.title("Ground Truth : ()".format(test_Y[0]))
 
 #Reshape data
-train_X = train_X.reshape(-1, 128, 130, 1)
-test_X = test_X.reshape(-1, 128, 130, 1)
+train_X = train_X.reshape(-1, WIDTH, HEIGHT, 1)
+test_X = test_X.reshape(-1, WIDTH, HEIGHT, 1)
 train_X.shape, test_X.shape
 
 #Format data type
@@ -78,7 +116,7 @@ KERNEL_SIZE = 5
 #Build the sequential network
 ##NEED TO LOOK INTO DROPOUT (HELPS PREVENT OVERFITTING MODEL)##
 model = keras.Sequential()
-model.add(layers.Conv2D(24, (KERNEL_SIZE, KERNEL_SIZE), activation='relu', input_shape(128,130,1), padding='same'))
+model.add(layers.Conv2D(24, (KERNEL_SIZE, KERNEL_SIZE), activation='relu', input_shape(WIDTH,HEIGHT,1), padding='same'))
 model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
 #model.add(layers.Dropout(0.25))
 model.add(layers.Conv2D(48, (KERNEL_SIZE, KERNEL_SIZE), activation='relu', padding='same'))
