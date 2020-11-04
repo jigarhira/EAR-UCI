@@ -19,8 +19,6 @@ from tensorflow.keras.layers.normalization import BatchNormalization
 from tensorflow.keras.presprocessing import image
 
 #Load the data
-##NEED TO FIGURE OUT LOADING PROCEDURE##
-##NEED TO FINALIZE INPUT DIMENSIONS##
 WIDTH = 128
 HEIGHT = 130
 
