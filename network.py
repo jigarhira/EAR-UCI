@@ -101,20 +101,16 @@ test_Y_one_hot = to_categorical(test_Y)
 print('Original label: ', train_Y[0])
 print('Converted label: ', train_Y_one_hot[0])
 
-#Split testing data, setting aside 20% for validation
-train_X, valid_X, train_label, valid_label = train_test_split(train_X, train_Y_one_hot, test_size=0.2, random_state=13)
-train_X.shape, valid_X.shape, train_label.shape, valid_label.shape
-
 #Neural Network Structure
-batch_size = 64
-epochs = 20
-num_classes = nClasses
+BATCH_SIZE = 16
+EPOSCHS = 20
+NUM_CLASSES = nClasses
 KERNEL_SIZE = 5
 
 #Build the sequential network
 ##NEED TO LOOK INTO DROPOUT (HELPS PREVENT OVERFITTING MODEL)##
 model = keras.Sequential()
-model.add(layers.Conv2D(24, (KERNEL_SIZE, KERNEL_SIZE), activation='relu', input_shape(WIDTH,HEIGHT,1), padding='same'))
+model.add(layers.Conv2D(24, kernel_size=(KERNEL_SIZE, KERNEL_SIZE), activation='relu', padding='same', input_shape(WIDTH,HEIGHT,1)))
 model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
 #model.add(layers.Dropout(0.25))
 model.add(layers.Conv2D(48, (KERNEL_SIZE, KERNEL_SIZE), activation='relu', padding='same'))
@@ -136,14 +132,15 @@ model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimi
 #Train model
 train = model.fit(train_X, 
                   train_label, 
-                  batch_size=batch_size, 
-                  epochs=epochs,verbose=1,
+                  batch_size=BATCH_SIZE, 
+                  epochs=EPOCHS,
+                  verbose=1,
                   validation_data=(valid_X, valid_label),
                   callbacks=[tensorboard_callback])
 
 #Model Evaluation
 test_eval = model.evaluate(test_X, test_Y_one_hot, verbose=1)
-print('Test loss : ' test_eval[0])
+print('Test loss : ', test_eval[0])
 print('Test accuracy : ', test_eval[1])
 
 #Make plots
@@ -161,31 +158,3 @@ plt.plot(epochs, loss, 'bo', label='Training loss')
 plt.plot(epochs, val_loss, 'b', label='Validation loss')
 plt.legend()
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
