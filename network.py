@@ -6,17 +6,16 @@ Current structure type: CNN
 Author: Ian Flores
 """
 
-from sklearn.model_selection import train_test_split
 import os
 import tensorflow as tf
 import matplotlib as plt
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras import utils
-from tensorflow.keras import model
+from tensorflow.keras import models
 from tensorflow.keras import layers
-from tensorflow.keras.layers.normalization import BatchNormalization
-from tensorflow.keras.presprocessing import image
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.preprocessing import image
 
 #Load the data
 WIDTH = 128
@@ -27,7 +26,7 @@ training_data_path = PATH+'/data/train'
 train_x = []
 train_y = []
 for fold in training_data_path:
-    fold_path = data_path + fold
+    fold_path = training_data_path + fold
     for sample in fold:
         img_path = fold_path + sample
         x = image.load_img(img_path)
@@ -110,7 +109,7 @@ KERNEL_SIZE = 5
 #Build the sequential network
 ##NEED TO LOOK INTO DROPOUT (HELPS PREVENT OVERFITTING MODEL)##
 model = keras.Sequential()
-model.add(layers.Conv2D(24, kernel_size=(KERNEL_SIZE, KERNEL_SIZE), activation='relu', padding='same', input_shape(WIDTH,HEIGHT,1)))
+model.add(layers.Conv2D(24, kernel_size=(KERNEL_SIZE, KERNEL_SIZE), activation='relu', padding='same', input_shape=(WIDTH,HEIGHT,1)))
 model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
 #model.add(layers.Dropout(0.25))
 model.add(layers.Conv2D(48, (KERNEL_SIZE, KERNEL_SIZE), activation='relu', padding='same'))
