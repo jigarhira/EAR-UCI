@@ -37,7 +37,7 @@ for fold in training_data_path:
         train_y.append(x_type)
 
 validation_data_path = PATH+'/data/validation'
-validation_batch = os.listdir(validation_path)
+validation_batch = os.listdir(validation_data_path)
 test_x = []
 test_y = []
 for fold in validation_data_path:
@@ -66,7 +66,7 @@ train_data, test_data = train_data / 255.0, test_images / 255.0
 #Find number of classifications and display
 classes = np.unique(train_Y)
 nClasses = len(classes)
-print('Total number of outputs : '. nClasses)
+print('Total number of outputs : ', nClasses)
 print('Output classes : ', classes)
 
 #Test that data was properly loaded
