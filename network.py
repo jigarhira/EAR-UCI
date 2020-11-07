@@ -134,7 +134,12 @@ model.summary()
 model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(),metrics=['accuracy'])
 
 #Train model
-train = fashion_model.fit(train_X, train_label, batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(valid_X, valid_label))
+train = model.fit(train_X, 
+                  train_label, 
+                  batch_size=batch_size, 
+                  epochs=epochs,verbose=1,
+                  validation_data=(valid_X, valid_label),
+                  callbacks=[tensorboard_callback])
 
 #Model Evaluation
 test_eval = model.evaluate(test_X, test_Y_one_hot, verbose=1)
