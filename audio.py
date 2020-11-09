@@ -82,3 +82,15 @@ if __name__ == "__main__":
     Audio.write_sample(path, signal, 44100)
     normalized, sr = Audio.load_sample(path)
     spectrogram = Audio.gen_spec(normalized)
+
+    # Generate spectrograms for all folders in train
+    import os
+    rootdir = r'C:\Users\Tritai\Desktop\Audio'
+ 
+    for subdir, dirs, files in os.walk(rootdir):
+        for file in files:
+            wav = os.path.join(subdir, file)
+            normalized, sr = Audio.load_sample(wav)
+            audio = Audio.gen_spec(normalized)
+            np.save(os.path.splitext(wav)[0], audio)
+
