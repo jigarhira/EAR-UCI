@@ -18,9 +18,6 @@ from tensorflow.keras.preprocessing import image
 
 from dataset import EARDataset
 
-#Load the data
-WIDTH = 128
-HEIGHT = 130
 
 # path to data samples
 training_data_path = '/home/hiraj/projects/ear-uci-dataset/spectrograms/train'
