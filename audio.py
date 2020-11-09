@@ -32,7 +32,11 @@ class Audio:
             np.ndarray: Numpy array audio time series.
             int: Output sampling rate.
         """
-        return librosa.load(path, sr=self.SAMPLING_RATE, mono=self.MONO, offset=offset, duration=self.DURATION)
+        # load audio file into numpy array
+        audio, sr = librosa.load(path, sr=self.SAMPLING_RATE, mono=self.MONO, offset=offset, duration=self.DURATION)
+        # if audio is less than 3 seconds, pad with zeros
+        audio = np.pad(audio, (0, int(self.DURATION * self.SAMPLING_RATE) - len(audio)), constant_values=0)
+        return audio, sr
     
     @classmethod
     def write_sample(self, path: str, audio: np.ndarray, sampling_rate: int) -> None:
