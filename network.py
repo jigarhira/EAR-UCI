@@ -6,7 +6,6 @@ Current structure type: CNN
 Author: Ian Flores
 """
 
-import os
 import tensorflow as tf
 import matplotlib as plt
 import numpy as np
@@ -17,49 +16,26 @@ from tensorflow.keras import layers
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.preprocessing import image
 
+from dataset import EARDataset
+
 #Load the data
 WIDTH = 128
 HEIGHT = 130
 
-PATH = os.getcwd()
-training_data_path = PATH+'/data/train'
-train_x = []
-train_y = []
-for fold in training_data_path:
-    fold_path = training_data_path + fold
-    for sample in fold:
-        img_path = fold_path + sample
-        x = image.load_img(img_path)
-        x_name = os.path.basename(image)
-        x_type = x_name[-1]
-        train_x.append(x)
-        train_y.append(x_type)
+# path to data samples
+training_data_path = '/home/hiraj/projects/ear-uci-dataset/spectrograms/train'
+validation_data_path = '/home/hiraj/projects/ear-uci-dataset/spectrograms/validation'
 
-validation_data_path = PATH+'/data/validation'
-validation_batch = os.listdir(validation_data_path)
-test_x = []
-test_y = []
-for fold in validation_data_path:
-    fold_path = validation_data_path + fold
-    for sample in fold:
-        img_path = fold_path + sample
-        x = image.load_img(img_path)
-        x_name = os.path.basename(image)
-        x_type = x_name[-1]
-        test_x.append(x)
-        test_y.append(x_type)
+# load dataset
+dataset = EARDataset()
+dataset.load(training_data_path, validation_data_path)
+train_x, train_y, test_x, test_y = dataset.train_x, dataset.train_y, dataset.test_x, dataset.test_y
 
-#convert data to numpy array
-train_x = np.array(train_x)
-train_y = np.array(train_y)
-test_x = np.array(test_x)
-test_y = np.array(test_y)
+# print data shape
+print('Training data shape : ', train_x.shape, train_y.shape)
+print('Testing data shape : ', test_x.shape, test_y.shape)
 
-#Print data shape
-print('Training data shape : ', train_X.shape, train_Y.shape)
-print('Testing data shape : ', test_X.shape, test_Y.shape)
-
-#Normalize thei pixel values of spectrograms
+# normalize thei pixel values of spectrograms
 train_data, test_data = train_data / 255.0, test_images / 255.0
 
 #Find number of classifications and display
