@@ -31,42 +31,38 @@ dataset = EARDataset()
 dataset.load(training_data_path, validation_data_path)
 train_x, train_y, test_x, test_y = dataset.train_x, dataset.train_y, dataset.test_x, dataset.test_y
 
+# normalize each spectrogram's values individually from 0.0 to 1.0
+train_x, test_x = map(lambda x: (x[:, :] - x[:, :].min()) / (x[:, :].max() - x[:, :].min()), [train_x, test_x])
+
 # print data shape
 print('Training data shape : ', train_x.shape, train_y.shape)
 print('Testing data shape : ', test_x.shape, test_y.shape)
 
-# normalize thei pixel values of spectrograms
-train_data, test_data = train_data / 255.0, test_images / 255.0
+# print number of classifications
+print('Total number of outputs : ', len(dataset.SAMPLE_CATEGORIES))
+print('Output classes : ', dataset.SAMPLE_CATEGORIES)
 
-#Find number of classifications and display
-classes = np.unique(train_Y)
-nClasses = len(classes)
-print('Total number of outputs : ', nClasses)
-print('Output classes : ', classes)
+# test that data was properly loaded by displaying a couple samples
+plt.figure(figsize=[8, 4])
 
-#Test that data was properly loaded
-plt.figure(figsize=[5,5])
-
-# Display first image in training set
+# first spectrogram in training set
 plt.subplot(121)
-plt.imshow(train_X[0,:,:], cmap='gray')
-plt.title("Ground Truth : ()".format(train_Y[0]))
+plt.imshow(train_x[0, 0, :, :], cmap='gray')
+plt.title("Training Set Ground Truth : {}".format(train_y[0, 0]))
+# first spectrogram in testing set
+plt.subplot(122)
+plt.imshow(test_x[0, 0, :, :], cmap='gray')
+plt.title("Test Set Ground Truth : {}".format(test_y[0, 0]))
 
-# Display first image in testing set
-plt.subplot(121)
-plt.imshow(test_X[0,:,:], cmap='gray')
-plt.title("Ground Truth : ()".format(test_Y[0]))
+plt.show()
 
-#Reshape data
+# reshape data TODO: FIX THIS NOT COMPLETE YET
 train_X = train_X.reshape(-1, WIDTH, HEIGHT, 1)
 test_X = test_X.reshape(-1, WIDTH, HEIGHT, 1)
 train_X.shape, test_X.shape
 
-#Format data type
-train_X = train_X.astype('float32')
-test_X = test_X.astype('float32')
-train_X = train_X / 255.
-test_X = test_X / 255.
+# format data type
+train_x, test_x = map(lambda x: x.astype('float32'), [train_x, test_x])
 
 #Convert labels to one-hot encoding
 train_Y_one_hot = to_categorical(train_Y)
