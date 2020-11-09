@@ -13,7 +13,7 @@ import numpy as np
 class EARDataset:
 
     # dataset parameters
-    SAMPLE_CATEGORIES = 4
+    SAMPLE_CATEGORIES = [0, 1, 2, 3]
     SAMPLE_SHAPE = (128, 259)
     
     TRAINING_FOLDS = 9
