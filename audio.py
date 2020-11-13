@@ -19,7 +19,8 @@ class Audio:
     N_FFT = 1024            # Window size
     HOP_LENGTH = 512        # Length samples between windows
     N_MELS = 128            # Number of Mel filters
-    
+    BUFFER = np.array(np.zeros(SAMPLING_RATE*int(DURATION)*2, dtype=float))   # Buffer for recording audio
+
     @classmethod
     def load_sample(self, path: str, offset=0.0) -> Tuple[np.ndarray, int]:
         """Loads WAV audio sample.
@@ -74,23 +75,47 @@ class Audio:
         spec = librosa.power_to_db(spec, ref=np.max)
         return spec
 
+    @classmethod
+    def record_sample_mem(self) -> None:
+        """Records audio into buffer for spectrogram generation.
+
+        Returns:
+            np.ndarray: Numpy array audio time series.
+        """
+        sampled_audio = sd.rec(int(self.DURATION/2*self.SAMPLING_RATE), samplerate=self.SAMPLING_RATE, channels=1, dtype='float64')
+        sd.wait()
+        Audio.BUFFER = np.concatenate((np.squeeze(sampled_audio), Audio.BUFFER[0:int(Audio.DURATION)*2*Audio.SAMPLING_RATE-len(sampled_audio)]))
+        return None    
+  
+
 if __name__ == "__main__":
 
     path = 'C:/UCI/Senior Year/159_senior_design/output.wav'
     # record, write, and load audio
-    signal = Audio.record_sample()
-    Audio.write_sample(path, signal, 44100)
-    normalized, sr = Audio.load_sample(path)
-    spectrogram = Audio.gen_spec(normalized)
+    # signal = Audio.record_sample()
+    # print(signal)
+    # Audio.write_sample(path, signal, 44100)
+    # normalized, sr = Audio.load_sample(path)
+    # spectrogram = Audio.gen_spec(normalized)
 
-    # Generate spectrograms for all folders in train
-    import os
-    rootdir = r'C:\Users\Tritai\Desktop\Audio'
+    while True:
+        Audio.record_sample_mem()
+        spectrogram = Audio.gen_spec(Audio.BUFFER[44100*3*2-(3*44100):44100*3*2])
+        # display mel-spectrogram
+        import librosa.display
+        import matplotlib.pyplot as plt
+        librosa.display.specshow(spectrogram, sr=44100, hop_length=512, x_axis='time', y_axis='mel') #display with frequency axis in mel scale
+        plt.colorbar(format='%+2.0f dB')
+        plt.show()
+
+    # generate spectrograms for all folders in train
+    # import os
+    # rootdir = r'C:\Users\Tritai\Desktop\Audio'
  
-    for subdir, dirs, files in os.walk(rootdir):
-        for file in files:
-            wav = os.path.join(subdir, file)
-            normalized, sr = Audio.load_sample(wav)
-            audio = Audio.gen_spec(normalized)
-            np.save(os.path.splitext(wav)[0], audio)
+    # for subdir, dirs, files in os.walk(rootdir):
+    #     for file in files:
+    #         wav = os.path.join(subdir, file)
+    #         normalized, sr = Audio.load_sample(wav)
+    #         audio = Audio.gen_spec(normalized)
+    #         np.save(os.path.splitext(wav)[0], audio)
 
