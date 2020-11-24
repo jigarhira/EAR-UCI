@@ -20,7 +20,6 @@ class EARDataset:
     VALIDATION_FOLDS = 1
     SAMPLES_PER_FOLD = 2400
 
-
     def __init__(self) -> None:
         # training data
         self.train_x = np.zeros((self.TRAINING_FOLDS, self.SAMPLES_PER_FOLD, self.SAMPLE_SHAPE[0], self.SAMPLE_SHAPE[1]))

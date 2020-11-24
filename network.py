@@ -29,7 +29,7 @@ class Network:
     
     def __init__(self) -> None:        
         #training dataset
-        self.dataset = None
+        self.dataset = EARDataset()
         
         #Dataset variables
         self.BATCH_SIZE = None
@@ -56,10 +56,10 @@ class Network:
         """
 
         print('Loading dataset files')
-        self.train_x = np.load(output_file_path + 'train_x.npy', allow_pickle=True)
-        self.train_y = np.load(output_file_path + 'train_y.npy', allow_pickle=True)
-        self.test_x = np.load(output_file_path + 'test_x.npy', allow_pickle=True)
-        self.test_y = np.load(output_file_path + 'test_y.npy', allow_pickle=True)
+        self.train_x = np.load(dataset_file_path + 'train_x.npy', allow_pickle=True)
+        self.train_y = np.load(dataset_file_path + 'train_y.npy', allow_pickle=True)
+        self.test_x = np.load(dataset_file_path + 'test_x.npy', allow_pickle=True)
+        self.test_y = np.load(dataset_file_path + 'test_y.npy', allow_pickle=True)
         print('Dataset loading complete')
 
         # normalize each spectrogram's values individually from 0.0 to 1.0
@@ -112,7 +112,8 @@ class Network:
         
         """
         # Neural Network Structure
-        self.BATCH_SIZE = self.dataset.SAMPLES_PER_FOLD
+        #self.BATCH_SIZE = self.dataset.SAMPLES_PER_FOLD
+        self.BATCH_SIZE = 240
         self.NUM_CLASSES = len(self.dataset.SAMPLE_CATEGORIES)
 
         # build the sequential network
@@ -154,12 +155,12 @@ class Network:
                                callbacks=[tensorboard_callback])
 
 if __name__ == "__main__":
-    training_data_path = '/home/hiraj/projects/ear-uci-dataset/spectrograms/train'
-    validation_data_path = '/home/hiraj/projects/ear-uci-dataset/spectrograms/validation'
+    training_data_path = '/home/ihflores/EAR-UCI-Dataset/Spectrograms/train'
+    validation_data_path = '/home/ihflores/EAR-UCI-Dataset/Spectrograms/validation'
     dataset_file_path = './dataset/'
 
-    # dataset = EARDataset()
-    # dataset.load(training_data_path, validation_data_path, output_file_path)
+    #dataset = EARDataset()
+    #dataset.load(training_data_path, validation_data_path, dataset_file_path)
 
     network = Network()
     network.load_dataset(dataset_file_path)
