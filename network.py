@@ -27,11 +27,7 @@ class Network:
     #default directories
     LOG_DIR = './LOGS/FIT/'
     
-    def __init__(self, training_data_path, validation_data_path) -> None:
-        #paths to data samples
-        self.training_data_path = training_data_path
-        self.validation_data_path = validation_data_path
-        
+    def __init__(self) -> None:        
         #training dataset
         self.dataset = None
         
@@ -53,15 +49,18 @@ class Network:
         
         #network model
         self.model = None
-
-    def prepare_dataset(self) -> None:
+    
+    def load_dataset(self, dataset_file_path) -> None:
         """Loads the EAR dataset, normalizes, reshapes, and converts labels to one-hot encoding
 
         """
-        # load dataset
-        self.dataset = EARDataset()
-        self.dataset.load(self.training_data_path, self.validation_data_path)
-        self.train_x, self.train_y, self.test_x, self.test_y = self.dataset.train_x, self.dataset.train_y, self.dataset.test_x, self.dataset.test_y
+
+        print('Loading dataset files')
+        self.train_x = np.load(output_file_path + 'train_x.npy', allow_pickle=True)
+        self.train_y = np.load(output_file_path + 'train_y.npy', allow_pickle=True)
+        self.test_x = np.load(output_file_path + 'test_x.npy', allow_pickle=True)
+        self.test_y = np.load(output_file_path + 'test_y.npy', allow_pickle=True)
+        print('Dataset loading complete')
 
         # normalize each spectrogram's values individually from 0.0 to 1.0
         self.train_x, self.test_x = map(lambda x: (x[:, :] - x[:, :].min()) / (x[:, :].max() - x[:, :].min()), [self.train_x, self.test_x])
@@ -157,7 +156,12 @@ class Network:
 if __name__ == "__main__":
     training_data_path = '/home/hiraj/projects/ear-uci-dataset/spectrograms/train'
     validation_data_path = '/home/hiraj/projects/ear-uci-dataset/spectrograms/validation'
-    network = Network(training_data_path, validation_data_path)
-    network.prepare_dataset()
+    dataset_file_path = './dataset/'
+
+    # dataset = EARDataset()
+    # dataset.load(training_data_path, validation_data_path, output_file_path)
+
+    network = Network()
+    network.load_dataset(dataset_file_path)
     network.create_network()
     network.train_model()
