@@ -115,19 +115,28 @@ class Network:
         #self.BATCH_SIZE = self.dataset.SAMPLES_PER_FOLD
         self.BATCH_SIZE = 240
         self.NUM_CLASSES = len(self.dataset.SAMPLE_CATEGORIES)
+        leaky_relu_alpha = 0.1
 
         # build the sequential network
         self.model = keras.Sequential()
-        self.model.add(layers.Conv2D(24, kernel_size=(self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
+        #self.model.add(layers.Conv2D(24, kernel_size=(self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
+        self.model.add(layers.Conv2D(24, kernel_size=(self.KERNEL_SIZE, self.KERNEL_SIZE), padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
+        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
         self.model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
         self.model.add(layers.Dropout(0.25))
-        self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same'))
+        #self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same'))
+        self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), padding='same'))
+        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
         self.model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
         self.model.add(layers.Dropout(0.25))
-        self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same'))
+        #self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same'))
+        self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), padding='same'))
+        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
         self.model.add(layers.Dropout(0.4))
         self.model.add(layers.Flatten())
-        self.model.add(layers.Dense(64, activation='relu'))
+        #self.model.add(layers.Dense(64, activation='relu'))
+        self.model.add(layers.Dense(64))
+        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
         self.model.add(layers.Dropout(0.3))
         self.model.add(layers.Dense(self.NUM_CLASSES, activation='softmax'))
 
@@ -146,7 +155,7 @@ class Network:
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
         # train model
-        train = self.model.fit(self.train_x, 
+        self.model.fit(self.train_x, 
                                self.train_y_one_hot, 
                                batch_size=self.BATCH_SIZE, 
                                epochs=self.EPOCHS,
@@ -154,13 +163,17 @@ class Network:
                                validation_data=(self.test_x, self.test_y_one_hot),
                                callbacks=[tensorboard_callback])
 
+        #save the model
+        filepath =  './saved_models'
+        models.save_model(self.model, filepath)
+
 if __name__ == "__main__":
-    training_data_path = '/home/ihflores/EAR-UCI-Dataset/Spectrograms/train'
-    validation_data_path = '/home/ihflores/EAR-UCI-Dataset/Spectrograms/validation'
+    training_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/train'
+    validation_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/validation'
     dataset_file_path = './dataset/'
 
-    #dataset = EARDataset()
-    #dataset.load(training_data_path, validation_data_path, dataset_file_path)
+    dataset = EARDataset()
+    dataset.load(training_data_path, validation_data_path, dataset_file_path)
 
     network = Network()
     network.load_dataset(dataset_file_path)
