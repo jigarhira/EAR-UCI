@@ -18,8 +18,7 @@ class EARDataset:
     
     TRAINING_FOLDS = 9
     VALIDATION_FOLDS = 1
-    SAMPLES_PER_FOLD = 16
-
+    SAMPLES_PER_FOLD = 2400
 
     def __init__(self) -> None:
         # training data
@@ -30,7 +29,10 @@ class EARDataset:
         self.test_y = np.zeros((self.VALIDATION_FOLDS, self.SAMPLES_PER_FOLD))
 
 
-    def load(self, training_data_path, validation_data_path):
+    def load(self, training_data_path, validation_data_path, output_file_path):
+        count = 0
+
+        print('Loading test set')
         # iterate through all the samples in the training folder
         for root, _, files in os.walk(training_data_path):
             # iterate through all the sample files
@@ -39,7 +41,7 @@ class EARDataset:
                 
                 # parse sample filename
                 sample_num, fold, category = file[:-4].split('-')
-                sample_num, fold, category = int(sample_num) - 1, int(fold) - 1, int(category)
+                sample_num, fold, category = int(sample_num), int(fold), int(category)
 
                 # load spectrogram
                 spectrogram = np.load(filepath, allow_pickle=True)
@@ -48,6 +50,13 @@ class EARDataset:
                 self.train_x[fold][sample_num % self.SAMPLES_PER_FOLD] = spectrogram
                 self.train_y[fold][sample_num % self.SAMPLES_PER_FOLD] = category
 
+                count += 1
+                if count % 1000 == 0:
+                    print('loaded ' + str(count) + ' spectrograms')
+
+        count = 0
+        
+        print('Loading validation set')
         # iterate through all the samples in the validation folder
         for root, _, files in os.walk(validation_data_path):
             # iterate through all the samples files
@@ -56,7 +65,7 @@ class EARDataset:
 
                 # parse sample filename
                 sample_num, fold, category = file[:-4].split('-')
-                sample_num, fold, category = int(sample_num) - 1, int(fold) - self.TRAINING_FOLDS - 1, int(category)
+                sample_num, fold, category = int(sample_num), int(fold) - self.TRAINING_FOLDS, int(category)
 
                 # load spectrogram
                 spectrogram = np.load(filepath, allow_pickle=True)
@@ -65,6 +74,16 @@ class EARDataset:
                 self.test_x[fold][sample_num % self.SAMPLES_PER_FOLD] = spectrogram
                 self.test_y[fold][sample_num % self.SAMPLES_PER_FOLD] = category
 
+                count += 1
+                if count % 1000 == 0:
+                    print('loaded ' + str(count) + ' spectrograms')
+
+        # save dataset to numpy arrays
+        print('saving dataset to files')
+        np.save(output_file_path + 'train_x.npy', self.train_x, allow_pickle=True)
+        np.save(output_file_path + 'train_y.npy', self.train_y, allow_pickle=True)
+        np.save(output_file_path + 'test_x.npy', self.test_x, allow_pickle=True)
+        np.save(output_file_path + 'test_y.npy', self.test_y, allow_pickle=True)
 
 
 if __name__ == "__main__":
