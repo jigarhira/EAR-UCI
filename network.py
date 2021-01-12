@@ -113,7 +113,7 @@ class Network:
         """
         # Neural Network Structure
         #self.BATCH_SIZE = self.dataset.SAMPLES_PER_FOLD
-        self.BATCH_SIZE = 240
+        self.BATCH_SIZE = 120
         self.NUM_CLASSES = len(self.dataset.SAMPLE_CATEGORIES)
         leaky_relu_alpha = 0.1
 
@@ -168,12 +168,12 @@ class Network:
         models.save_model(self.model, filepath)
 
 if __name__ == "__main__":
-    training_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/train'
-    validation_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/validation'
+    #training_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/train'
+    #validation_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/validation'
     dataset_file_path = './dataset/'
 
-    dataset = EARDataset()
-    dataset.load(training_data_path, validation_data_path, dataset_file_path)
+    #dataset = EARDataset()
+    #dataset.load(training_data_path, validation_data_path, dataset_file_path)
 
     network = Network()
     network.load_dataset(dataset_file_path)
