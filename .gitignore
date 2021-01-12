@@ -1,5 +1,9 @@
 # Project
 logs/
+LOGS/
+dataset/
+saved_models/assets/
+saved_models/variables/
 
 # Visual Studio Code
 .vscode/
