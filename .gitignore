@@ -1,5 +1,7 @@
 # Project
 logs/
+LOGS/
+dataset/
 
 # Visual Studio Code
 .vscode/
