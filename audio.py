@@ -6,10 +6,13 @@ Author: Jigar Hira, Tritai Nguyen
 """
 
 from typing import Tuple
+from scipy.io.wavfile import write
+from tensorflow.keras.models import load_model
 import numpy as np
 import librosa
 import soundfile as sf
 import sounddevice as sd
+
 
 class Audio:
     # default audio parameters
@@ -20,7 +23,7 @@ class Audio:
     HOP_LENGTH = 512        # Length samples between windows
     N_MELS = 128            # Number of Mel filters
     BUFFER = np.array(np.zeros(SAMPLING_RATE*int(DURATION)*2, dtype=float))   # Buffer for recording audio
-    EPSILON = 0.2           # delay to start recording
+    SPECTROGRAM = []
 
     @classmethod
     def load_sample(self, path: str, offset=0.0) -> Tuple[np.ndarray, int]:
@@ -84,12 +87,11 @@ class Audio:
         Returns:
             np.ndarray: Numpy array audio time series.
         """
-        sampled_audio = sd.rec(int((self.DURATION+self.EPSILON)*self.SAMPLING_RATE), samplerate=self.SAMPLING_RATE, channels=1)
+        sampled_audio = sd.rec(int((self.DURATION)*self.SAMPLING_RATE), samplerate=self.SAMPLING_RATE, channels=1)
         sd.wait()
-        sampled_audio = sampled_audio[int(self.EPSILON*self.SAMPLING_RATE):int((self.DURATION+self.EPSILON)*self.SAMPLING_RATE)]
-        Audio.BUFFER = np.concatenate((np.squeeze(sampled_audio), Audio.BUFFER[0:int(Audio.DURATION)*2*Audio.SAMPLING_RATE-len(sampled_audio)]))
+        write("example.wav", Audio.SAMPLING_RATE, sampled_audio.astype(np.float))
+        Audio.BUFFER = np.concatenate((np.squeeze(sampled_audio), Audio.BUFFER[0:int(self.DURATION)*2*self.SAMPLING_RATE-len(sampled_audio)]))
         return None    
-  
 
 if __name__ == "__main__":
 
@@ -108,12 +110,20 @@ if __name__ == "__main__":
     # plt.colorbar(format='%+2.0f dB')
     # plt.show()
 
+    import librosa.display
+    import matplotlib.pyplot as plt
+    model_path = './saved_models'
+    model = load_model(model_path, compile = True)
+
     while True:
         Audio.record_sample_mem()
-        spectrogram = Audio.gen_spec(Audio.BUFFER[44100*3*2-(3*44100):44100*3*2])
+        spectrogram = Audio.gen_spec(Audio.BUFFER[3*44100:44100*3*2])
+        predictions = model.predict(spectrogram)
+        print(predictions)
+        Audio.SPECTROGRAM = np.append(spectrogram)
+        print(np.shape(spectrogram))
+
         # display mel-spectrogram
-        import librosa.display
-        import matplotlib.pyplot as plt
         librosa.display.specshow(spectrogram, sr=44100, hop_length=512, x_axis='time', y_axis='mel') #display with frequency axis in mel scale
         plt.colorbar(format='%+2.0f dB')
         plt.show()
