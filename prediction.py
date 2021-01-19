@@ -19,7 +19,7 @@ samples_x = []
 samples_y = []
 
 #use_samples = [12, 354, 2, 94, 123, 1003, 843, 253, 41, 2365]
-use_samples = [x for x in range(10)]
+use_samples = [x for x in range(1000)]
 
 prediction_path = './dataset'
 prediction_x = np.load(prediction_path+'/test_x.npy', allow_pickle=True)

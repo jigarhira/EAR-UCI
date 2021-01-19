@@ -99,7 +99,7 @@ class Network:
         print('Original label: ', self.train_y[0])
         print('Converted label: ', self.train_y_one_hot[0])
 
-    def create_network(self, kernel_size=5, conv_layers=2, conv_size=(24, 48)) -> None:
+    def create_network(self, kernel_size=5, conv_layers=2, conv_size=[24, 48], pool_size=(4, 2), strides=(4, 2), dense_size=64) -> None:
         """Create the sequential network model using Keras API
         
         """
@@ -110,13 +110,13 @@ class Network:
         self.model.add(layers.Conv2D(conv_size[0], kernel_size=(kernel_size, kernel_size), activation='relu', padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
         
         for i in range(conv_layers - 1):
-            self.model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
+            self.model.add(layers.MaxPooling2D(pool_size=pool_size, strides=strides, padding ='same'))
             self.model.add(layers.Conv2D(conv_size[i+1], (kernel_size, kernel_size), activation='relu', padding='same'))
         
         self.model.add(layers.Flatten())
 
         # add dense layers
-        self.model.add(layers.Dense(64, activation='relu'))
+        self.model.add(layers.Dense(dense_size, activation='relu'))
         self.model.add(layers.Dense(self.num_classes, activation='softmax'))
 
         # display model summary
@@ -142,7 +142,7 @@ class Network:
                         validation_data=(self.test_x, self.test_y_one_hot),
                         callbacks=[tensorboard_callback])
 
-    def save_model(save_path='./saved_models'):
+    def save_model(self, save_path='./saved_models'):
         """Save the model.
 
         Args:
@@ -161,5 +161,6 @@ if __name__ == "__main__":
 
     network = Network()
     network.load_dataset(dataset_file_path)
-    network.create_network(conv_layers=1, conv_size=(12))
+    network.create_network(conv_layers=1, conv_size=[2], pool_size=(2, 2), strides=(2, 2), dense_size=8)
     network.train_model(batch_size=120, epochs=3)
+    network.save_model()
