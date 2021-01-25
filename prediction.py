@@ -18,9 +18,9 @@ model = load_model(model_path, compile = True)
 samples_x = []
 samples_y = []
 
-#use_samples = [12, 354, 2, 94, 123, 1003, 843, 253, 41, 2365]
-total = 50
-use_samples = [x for x in range(total)]
+use_samples = [12, 354, 2, 94, 123, 1003, 843, 253, 41, 2365]
+total = 100
+#use_samples = [x for x in range(total)]
 
 prediction_path = './dataset'
 prediction_x = np.load(prediction_path+'/test_x.npy', allow_pickle=True)
@@ -45,7 +45,7 @@ correct = 0
 
 predictions = np.argmax(predictions, axis=1)
 samples_y = samples_y.flatten().astype('int')
-for x in range(total):
+for x in range(len(use_samples)):
     if predictions[x]== samples_y[x]:
         correct = correct + 1
 print(predictions)
