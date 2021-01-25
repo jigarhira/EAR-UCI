@@ -19,7 +19,8 @@ samples_x = []
 samples_y = []
 
 #use_samples = [12, 354, 2, 94, 123, 1003, 843, 253, 41, 2365]
-use_samples = [x for x in range(1000)]
+total = 50
+use_samples = [x for x in range(total)]
 
 prediction_path = './dataset'
 prediction_x = np.load(prediction_path+'/test_x.npy', allow_pickle=True)
@@ -40,5 +41,13 @@ print(samples_y.shape)
 
 #Generate predictions for samples
 predictions = model.predict(samples_x, batch_size=1)
-print(np.argmax(predictions, axis=1))
-print(samples_y.flatten().astype('int'))
+correct = 0
+
+predictions = np.argmax(predictions, axis=1)
+samples_y = samples_y.flatten().astype('int')
+for x in range(total):
+    if predictions[x]== samples_y[x]:
+        correct = correct + 1
+print(predictions)
+print(samples_y)
+print("accuracy = " + str(correct/total))
