@@ -1,8 +1,8 @@
 import os
 from twilio.rest import Client
 
-account_sid = '***REMOVED***'
-auth_token = '***REMOVED***'
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 client = Client(account_sid, auth_token)
 twilio_num = '***REMOVED***'
 user_num = '***REMOVED***'
