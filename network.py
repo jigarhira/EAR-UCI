@@ -54,7 +54,10 @@ class Network:
 
         # normalize each spectrogram's values individually from 0.0 to 1.0
         print('Normalizing dataset samples')
-        self.train_x, self.test_x = map(lambda x: (x[:, :] - x[:, :].min()) / (x[:, :].max() - x[:, :].min()), [self.train_x, self.test_x])
+        for i, sample in enumerate(self.train_x):
+            self.train_x[i] = (sample - sample.min()) / (sample.max() - sample.min())
+        for i, sample in enumerate(self.test_x):
+            self.test_x[i] = (sample - sample.min()) / (sample.max() - sample.min())
         print('Dataset normalization complete')
 
         # print data shape
@@ -70,12 +73,12 @@ class Network:
 
         # first spectrogram in training set
         plt.subplot(121)
-        plt.imshow(self.train_x[0, 0, :, :], cmap='gray')
-        plt.title("Training Set Ground Truth : {}".format(self.train_y[0, 0]))
+        plt.imshow(self.train_x[0, :, :], cmap='plasma')
+        plt.title("Training Set Ground Truth : {}".format(self.train_y[0]))
         # first spectrogram in testing set
         plt.subplot(122)
-        plt.imshow(self.test_x[0, 0, :, :], cmap='gray')
-        plt.title("Test Set Ground Truth : {}".format(self.test_y[0, 0]))
+        plt.imshow(self.test_x[0, :, :], cmap='plasma')
+        plt.title("Test Set Ground Truth : {}".format(self.test_y[0]))
 
         plt.show()
 
@@ -122,7 +125,7 @@ class Network:
         # display model summary
         self.model.summary()
 
-    def train_model(self, batch_size=120, epochs=20) -> None:
+    def train_model(self, batch_size=160, epochs=20) -> None:
         """Optimizes the model, sets up TensorBoard output, and trains the model
 
         """
@@ -161,6 +164,6 @@ if __name__ == "__main__":
 
     network = Network()
     network.load_dataset(dataset_file_path)
-    network.create_network(conv_layers=1, conv_size=[2], pool_size=(2, 2), strides=(2, 2), dense_size=8)
-    network.train_model(batch_size=120, epochs=3)
+    network.create_network()
+    network.train_model()
     network.save_model()

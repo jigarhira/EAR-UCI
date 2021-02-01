@@ -19,18 +19,17 @@ class EARDataset:
     # dataset parameters
     SAMPLE_CATEGORIES = [0, 1, 2, 3]
     SAMPLE_SHAPE = (128, 259)
-    
-    TRAINING_FOLDS = 9
-    VALIDATION_FOLDS = 1
-    SAMPLES_PER_FOLD = 2400
+
+    TRAINING_SAMPLES = 14400
+    VALIDATION_SAMPLES = 1600
 
     def __init__(self) -> None:
         # training data
-        self.train_x = np.zeros((self.TRAINING_FOLDS, self.SAMPLES_PER_FOLD, self.SAMPLE_SHAPE[0], self.SAMPLE_SHAPE[1]))
-        self.train_y = np.zeros((self.TRAINING_FOLDS, self.SAMPLES_PER_FOLD))
+        self.train_x = np.zeros((self.TRAINING_SAMPLES, self.SAMPLE_SHAPE[0], self.SAMPLE_SHAPE[1]))
+        self.train_y = np.zeros((self.TRAINING_SAMPLES))
         # validation data
-        self.test_x = np.zeros((self.VALIDATION_FOLDS, self.SAMPLES_PER_FOLD, self.SAMPLE_SHAPE[0], self.SAMPLE_SHAPE[1]))
-        self.test_y = np.zeros((self.VALIDATION_FOLDS, self.SAMPLES_PER_FOLD))
+        self.test_x = np.zeros((self.VALIDATION_SAMPLES, self.SAMPLE_SHAPE[0], self.SAMPLE_SHAPE[1]))
+        self.test_y = np.zeros((self.VALIDATION_SAMPLES))
 
 
     def load(self, dataset_file_path:str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -67,7 +66,7 @@ class EARDataset:
         """
         count = 0
 
-        print('Loading test set')
+        print('Generating test set')
         # iterate through all the samples in the training folder
         for root, _, files in os.walk(training_data_path):
             # iterate through all the sample files
@@ -75,23 +74,23 @@ class EARDataset:
                 filepath = root + os.sep + file
                 
                 # parse sample filename
-                sample_num, fold, category = file[:-4].split('-')
-                sample_num, fold, category = int(sample_num), int(fold), int(category)
+                sample_num, category, _, _, _ = file[:-4].split('-')
+                sample_num, category = int(sample_num), int(category)
 
                 # load spectrogram
                 spectrogram = np.load(filepath, allow_pickle=True)
 
                 # add sample to training sets
-                self.train_x[fold][sample_num % self.SAMPLES_PER_FOLD] = spectrogram
-                self.train_y[fold][sample_num % self.SAMPLES_PER_FOLD] = category
+                self.train_x[sample_num] = spectrogram
+                self.train_y[sample_num] = category
 
                 count += 1
                 if count % 1000 == 0:
-                    print('loaded ' + str(count) + ' spectrograms')
+                    print('generated ' + str(count) + ' spectrograms')
 
         count = 0
         
-        print('Loading validation set')
+        print('Generating validation set')
         # iterate through all the samples in the validation folder
         for root, _, files in os.walk(validation_data_path):
             # iterate through all the samples files
@@ -99,19 +98,19 @@ class EARDataset:
                 filepath = root + os.sep + file
 
                 # parse sample filename
-                sample_num, fold, category = file[:-4].split('-')
-                sample_num, fold, category = int(sample_num), int(fold) - self.TRAINING_FOLDS, int(category)
+                sample_num, category, _, _, _ = file[:-4].split('-')
+                sample_num, category = int(sample_num), int(category)
 
                 # load spectrogram
                 spectrogram = np.load(filepath, allow_pickle=True)
 
                 # add sample to validation sets
-                self.test_x[fold][sample_num % self.SAMPLES_PER_FOLD] = spectrogram
-                self.test_y[fold][sample_num % self.SAMPLES_PER_FOLD] = category
+                self.test_x[sample_num - self.TRAINING_SAMPLES] = spectrogram
+                self.test_y[sample_num - self.TRAINING_SAMPLES] = category
 
                 count += 1
                 if count % 1000 == 0:
-                    print('loaded ' + str(count) + ' spectrograms')
+                    print('generated ' + str(count) + ' spectrograms')
 
         # save dataset to numpy arrays
         print('Saving dataset to files')
@@ -122,5 +121,10 @@ class EARDataset:
 
 
 if __name__ == "__main__":
-    dataset = EARDataset()
-    dataset.load('.')
+    pass
+    # train_path = r'J:\Jigar_XPS15\Datasets\EAR-UCI-Dataset\Spectrograms\train'
+    # validation_path = r'J:\Jigar_XPS15\Datasets\EAR-UCI-Dataset\Spectrograms\validation'
+    # out_path = r'J:\Jigar_XPS15\Datasets\EAR-UCI\dataset\'
+    
+    # dataset = EARDataset()
+    # dataset.generate(train_path, validation_path, out_path)
