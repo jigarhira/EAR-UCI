@@ -20,20 +20,15 @@ from tensorflow.keras.preprocessing import image
 from dataset import EARDataset
 
 class Network:
-    #default network parameters
-    EPOCHS = 20
-    KERNEL_SIZE = 5
-
-    #default directories
+    # default directories
     LOG_DIR = './LOGS/FIT/'
     
     def __init__(self) -> None:        
-        #training dataset
+        # training dataset
         self.dataset = EARDataset()
         
-        #Dataset variables
-        self.BATCH_SIZE = None
-        self.NUM_CLASSES = None
+        # Dataset variables
+        self.num_classes = len(self.dataset.SAMPLE_CATEGORIES)
         
         #training data
         self.train_x = None
@@ -50,20 +45,17 @@ class Network:
         #network model
         self.model = None
     
-    def load_dataset(self, dataset_file_path) -> None:
+    def load_dataset(self, dataset_file_path:str) -> None:
         """Loads the EAR dataset, normalizes, reshapes, and converts labels to one-hot encoding
 
         """
-
-        print('Loading dataset files')
-        self.train_x = np.load(dataset_file_path + 'train_x.npy', allow_pickle=True)
-        self.train_y = np.load(dataset_file_path + 'train_y.npy', allow_pickle=True)
-        self.test_x = np.load(dataset_file_path + 'test_x.npy', allow_pickle=True)
-        self.test_y = np.load(dataset_file_path + 'test_y.npy', allow_pickle=True)
-        print('Dataset loading complete')
+        # load the dataset binares
+        self.train_x, self.train_y, self.test_x, self.test_y = self.dataset.load(dataset_file_path)
 
         # normalize each spectrogram's values individually from 0.0 to 1.0
+        print('Normalizing dataset samples')
         self.train_x, self.test_x = map(lambda x: (x[:, :] - x[:, :].min()) / (x[:, :].max() - x[:, :].min()), [self.train_x, self.test_x])
+        print('Dataset normalization complete')
 
         # print data shape
         print('Training data shape : ', self.train_x.shape, self.train_y.shape)
@@ -107,43 +99,30 @@ class Network:
         print('Original label: ', self.train_y[0])
         print('Converted label: ', self.train_y_one_hot[0])
 
-    def create_network(self) -> None:
+    def create_network(self, kernel_size=5, conv_layers=2, conv_size=[24, 48], pool_size=(4, 2), strides=(4, 2), dense_size=64) -> None:
         """Create the sequential network model using Keras API
         
         """
-        # Neural Network Structure
-        #self.BATCH_SIZE = self.dataset.SAMPLES_PER_FOLD
-        self.BATCH_SIZE = 120
-        self.NUM_CLASSES = len(self.dataset.SAMPLE_CATEGORIES)
-        leaky_relu_alpha = 0.1
-
         # build the sequential network
         self.model = keras.Sequential()
-        #self.model.add(layers.Conv2D(24, kernel_size=(self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
-        self.model.add(layers.Conv2D(24, kernel_size=(self.KERNEL_SIZE, self.KERNEL_SIZE), padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
-        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
-        self.model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
-        self.model.add(layers.Dropout(0.25))
-        #self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same'))
-        self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), padding='same'))
-        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
-        self.model.add(layers.MaxPooling2D(pool_size=(4, 2), strides=(4, 2), padding ='same'))
-        self.model.add(layers.Dropout(0.25))
-        #self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), activation='relu', padding='same'))
-        self.model.add(layers.Conv2D(48, (self.KERNEL_SIZE, self.KERNEL_SIZE), padding='same'))
-        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
-        self.model.add(layers.Dropout(0.4))
+
+        # add convolutional layers
+        self.model.add(layers.Conv2D(conv_size[0], kernel_size=(kernel_size, kernel_size), activation='relu', padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
+        
+        for i in range(conv_layers - 1):
+            self.model.add(layers.MaxPooling2D(pool_size=pool_size, strides=strides, padding ='same'))
+            self.model.add(layers.Conv2D(conv_size[i+1], (kernel_size, kernel_size), activation='relu', padding='same'))
+        
         self.model.add(layers.Flatten())
-        #self.model.add(layers.Dense(64, activation='relu'))
-        self.model.add(layers.Dense(64))
-        self.model.add(layers.LeakyReLU(alpha=leaky_relu_alpha))
-        self.model.add(layers.Dropout(0.3))
-        self.model.add(layers.Dense(self.NUM_CLASSES, activation='softmax'))
+
+        # add dense layers
+        self.model.add(layers.Dense(dense_size, activation='relu'))
+        self.model.add(layers.Dense(self.num_classes, activation='softmax'))
 
         # display model summary
         self.model.summary()
 
-    def train_model(self) -> None:
+    def train_model(self, batch_size=120, epochs=20) -> None:
         """Optimizes the model, sets up TensorBoard output, and trains the model
 
         """
@@ -155,27 +134,33 @@ class Network:
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
         # train model
-        self.model.fit(self.train_x, 
-                               self.train_y_one_hot, 
-                               batch_size=self.BATCH_SIZE, 
-                               epochs=self.EPOCHS,
-                               verbose=1,
-                               validation_data=(self.test_x, self.test_y_one_hot),
-                               callbacks=[tensorboard_callback])
+        self.model.fit( self.train_x, 
+                        self.train_y_one_hot, 
+                        batch_size=batch_size, 
+                        epochs=epochs,
+                        verbose=1,
+                        validation_data=(self.test_x, self.test_y_one_hot),
+                        callbacks=[tensorboard_callback])
 
-        #save the model
-        filepath =  './saved_models'
-        models.save_model(self.model, filepath)
+    def save_model(self, save_path='./saved_models'):
+        """Save the model.
+
+        Args:
+            save_path (str): saved model filepath. Defaults to './saved_models'.
+        """
+        print('Saving model')
+        models.save_model(self.model, save_path)
+        print('Model saved')
+
 
 if __name__ == "__main__":
     #training_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/train'
     #validation_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/validation'
+    
     dataset_file_path = './dataset/'
-
-    #dataset = EARDataset()
-    #dataset.load(training_data_path, validation_data_path, dataset_file_path)
 
     network = Network()
     network.load_dataset(dataset_file_path)
-    network.create_network()
-    network.train_model()
+    network.create_network(conv_layers=1, conv_size=[2], pool_size=(2, 2), strides=(2, 2), dense_size=8)
+    network.train_model(batch_size=120, epochs=3)
+    network.save_model()
