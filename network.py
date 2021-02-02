@@ -27,22 +27,22 @@ class Network:
         # training dataset
         self.dataset = EARDataset()
         
-        # Dataset variables
+        # dataset variables
         self.num_classes = len(self.dataset.SAMPLE_CATEGORIES)
         
-        #training data
+        # training data
         self.train_x = None
         self.train_y = None
         
-        #validation data
+        # validation data
         self.test_x = None
         self.test_y = None
         
-        #one_hot labels
+        # one_hot labels
         self.train_y_one_hot = None
         self.test_y_one_hot = None
         
-        #network model
+        # network model
         self.model = None
     
     def load_dataset(self, dataset_file_path:str) -> None:
@@ -106,6 +106,14 @@ class Network:
         """Create the sequential network model using Keras API
         
         """
+        # network parameters
+        self.kernel_size = kernel_size
+        self.conv_layers = conv_layers
+        self.conv_size = conv_size
+        self.pool_size = pool_size
+        self.strides = strides
+        self.dense_size = dense_size
+
         # build the sequential network
         self.model = keras.Sequential()
 
@@ -125,15 +133,24 @@ class Network:
         # display model summary
         self.model.summary()
 
-    def train_model(self, batch_size=160, epochs=20) -> None:
+    def train_model(self, batch_size=160, epochs=20, model_name='') -> None:
         """Optimizes the model, sets up TensorBoard output, and trains the model
 
         """
+        # training parameters
+        self.batch_size = batch_size
+        self.epochs = epochs
+
         # optimize model using cross entropy and the 'Adam" optimizer
         self.model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
 
         # setup tensorboard
-        log_dir = self.LOG_DIR + datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        if model_name != '':
+            model_name += '_'
+        log_dir = ( self.LOG_DIR +
+                    model_name +
+                    datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        )
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
         # train model
