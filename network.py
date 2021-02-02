@@ -133,7 +133,7 @@ class Network:
         # display model summary
         self.model.summary()
 
-    def train_model(self, batch_size=160, epochs=20, model_name='') -> None:
+    def train_model(self, batch_size=160, epochs=20, log_name='') -> None:
         """Optimizes the model, sets up TensorBoard output, and trains the model
 
         """
@@ -145,10 +145,10 @@ class Network:
         self.model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
 
         # setup tensorboard
-        if model_name != '':
-            model_name += '_'
+        if log_name != '':
+            log_name += '_'
         log_dir = ( self.LOG_DIR +
-                    model_name +
+                    log_name +
                     datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         )
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
