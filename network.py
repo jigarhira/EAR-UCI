@@ -102,14 +102,21 @@ class Network:
         print('Original label: ', self.train_y[0])
         print('Converted label: ', self.train_y_one_hot[0])
 
-    def create_network(self, kernel_size=5, conv_layers=2, conv_size=[24, 48], pool_size=(4, 2), strides=(4, 2), dense_size=64) -> None:
+    def create_network(
+        self,
+        kernel_size=5,
+        conv_layers=[24, 48],
+        pool_size=(4, 2),
+        strides=(4, 2),
+        dense_size=64,
+        dropout_rate=None
+    ) -> None:
         """Create the sequential network model using Keras API
         
         """
         # network parameters
         self.kernel_size = kernel_size
         self.conv_layers = conv_layers
-        self.conv_size = conv_size
         self.pool_size = pool_size
         self.strides = strides
         self.dense_size = dense_size
@@ -118,11 +125,16 @@ class Network:
         self.model = keras.Sequential()
 
         # add convolutional layers
-        self.model.add(layers.Conv2D(conv_size[0], kernel_size=(kernel_size, kernel_size), activation='relu', padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
-        
-        for i in range(conv_layers - 1):
+        self.model.add(layers.Conv2D(conv_layers[0], kernel_size=(kernel_size, kernel_size), activation='relu', padding='same', input_shape=(self.dataset.SAMPLE_SHAPE[0], self.dataset.SAMPLE_SHAPE[1], 1)))
+        self.model.add(layers.MaxPooling2D(pool_size=pool_size, strides=strides, padding ='same'))
+        if dropout_rate is not None:
+            self.model.add(layers.Dropout(dropout_rate[0]))
+
+        for i in range(1, len(conv_layers)):
+            self.model.add(layers.Conv2D(conv_layers[i], (kernel_size, kernel_size), activation='relu', padding='same'))
             self.model.add(layers.MaxPooling2D(pool_size=pool_size, strides=strides, padding ='same'))
-            self.model.add(layers.Conv2D(conv_size[i+1], (kernel_size, kernel_size), activation='relu', padding='same'))
+            if dropout_rate is not None:
+                self.model.add(layers.Dropout(dropout_rate[i]))
         
         self.model.add(layers.Flatten())
 
@@ -147,9 +159,10 @@ class Network:
         # setup tensorboard
         if log_name != '':
             log_name += '_'
-        log_dir = ( self.LOG_DIR +
-                    log_name +
-                    datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        log_dir = (
+            self.LOG_DIR +
+            log_name +
+            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         )
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
@@ -181,6 +194,6 @@ if __name__ == "__main__":
 
     network = Network()
     network.load_dataset(dataset_file_path)
-    network.create_network()
-    network.train_model()
-    network.save_model()
+    network.create_network(conv_layers=[24, 48, 48], dropout_rate=[0.2, 0.5, 0.5])
+    network.train_model(log_name='3conv_drop_2_5_5')
+    #network.save_model()
