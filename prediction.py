@@ -18,9 +18,8 @@ model = load_model(model_path, compile = True)
 samples_x = []
 samples_y = []
 
-#use_samples = [12, 354, 2, 94, 123, 1003, 843, 253, 41, 456]
-total = 100
-use_samples = [x for x in range(total)]
+use_samples = [12, 354, 2, 94, 123, 1003, 843, 253, 41, 456]
+#use_samples = [x for x in range(100)]
 
 prediction_path = './dataset'
 prediction_x = np.load(prediction_path+'/test_x.npy', allow_pickle=True)
@@ -55,4 +54,4 @@ for x in range(len(use_samples)):
         correct = correct + 1
 print(predictions)
 print(samples_y)
-print("accuracy = " + str(correct/total))
+print("accuracy = " + str(correct/len(samples_y)))
