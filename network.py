@@ -157,13 +157,15 @@ class Network:
         self.model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
 
         # setup tensorboard
+        timestamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         if log_name != '':
             log_name += '_'
         log_dir = (
             self.LOG_DIR +
             log_name +
-            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+            timestamp            
         )
+        self.model_name = log_name + timestamp
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
         # train model
@@ -175,14 +177,14 @@ class Network:
                         validation_data=(self.test_x, self.test_y_one_hot),
                         callbacks=[tensorboard_callback])
 
-    def save_model(self, save_path='./saved_models'):
+    def save_model(self, save_path='./saved_models/', model_name=''):
         """Save the model.
 
         Args:
             save_path (str): saved model filepath. Defaults to './saved_models'.
         """
         print('Saving model')
-        models.save_model(self.model, save_path)
+        models.save_model(self.model, save_path + model_name)
         print('Model saved')
 
 
@@ -194,6 +196,16 @@ if __name__ == "__main__":
 
     network = Network()
     network.load_dataset(dataset_file_path)
-    network.create_network(conv_layers=[24, 48, 48], dropout_rate=[0.2, 0.5, 0.5])
-    network.train_model(log_name='3conv_drop_2_5_5')
-    #network.save_model()
+    network.create_network(
+        kernel_size=3,
+        conv_layers=[24, 48, 48],
+        dropout_rate=[0.2, 0.2, 0.2],
+        pool_size=(4, 4),
+        strides=(4, 4),
+        dense_size=32
+    )
+    network.train_model(
+        batch_size=40,
+        log_name='3conv_drop_2_small_batch_44pool_32dense_3k'
+    )
+    network.save_model(model_name=network.model_name)
