@@ -17,27 +17,27 @@ def main():
     audio.start_live_record()
 
     # prediction loop
-    #while True:
-    #time_start = time.time()
+    while True:
+        time_start = time.time()
 
-    # get audio sample and convert to mono
-    sample = audio.get_audio_sample()
-    sample = librosa.to_mono([sample[:, 0], sample[:, 1]])
+        # get audio sample and convert to mono
+        sample = audio.get_audio_sample()
+        sample = librosa.to_mono([sample[:, 0], sample[:, 1]])
 
-    # generate spectrogram
-    spectrogram = Audio.gen_spec(sample)
+        # generate spectrogram
+        spectrogram = Audio.gen_spec(sample)
 
-    # normalize and reshape input
-    spectrogram = (spectrogram - spectrogram.min()) / (spectrogram.max() - spectrogram.min())
-    spectrogram = np.expand_dims(spectrogram, axis=0)
-    spectrogram = np.expand_dims(spectrogram, axis=-1)
+        # normalize and reshape input
+        spectrogram = (spectrogram - spectrogram.min()) / (spectrogram.max() - spectrogram.min())
+        spectrogram = np.expand_dims(spectrogram, axis=0)
+        spectrogram = np.expand_dims(spectrogram, axis=-1)
 
-    # generate prediction
-    prediction = model.predict(spectrogram, batch_size=1)
-    prediction = np.argmax(prediction, axis=1)
+        # generate prediction
+        prediction = model.predict(spectrogram, batch_size=1)
+        prediction = np.argmax(prediction, axis=1)
 
-    print(prediction)
-    #print('loop time: ' + str(time.time() - time_start))
+        print(prediction)
+        print('loop time: ' + str(time.time() - time_start))
 
 
 
