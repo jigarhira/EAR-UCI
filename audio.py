@@ -150,15 +150,17 @@ class Audio:
 
 
 if __name__ == "__main__":
-    audio = Audio()
-    audio.start_live_record()
+    pass
 
-    spectrogram = []
+    # audio = Audio()
+    # audio.start_live_record()
 
-    sample = audio.get_audio_sample()
-    sample = librosa.to_mono([sample[:, 0], sample[:, 1]])
+    # spectrogram = []
 
-    spectrogram.append(Audio.gen_spec(sample))
+    # sample = audio.get_audio_sample()
+    # sample = librosa.to_mono([sample[:, 0], sample[:, 1]])
+
+    # spectrogram.append(Audio.gen_spec(sample))
 
     # path = 'C:/UCI/Senior Year/159_senior_design/output.wav'
     # record, write, and load audio
