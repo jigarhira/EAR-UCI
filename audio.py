@@ -7,8 +7,11 @@ Author: Jigar Hira, Tritai Nguyen
 
 from typing import Tuple
 from scipy.io.wavfile import write
-from tensorflow.keras.models import load_model
 import numpy as np
+import collections
+import sys
+import time
+import copy
 import librosa
 import soundfile as sf
 import sounddevice as sd
@@ -22,6 +25,7 @@ class Audio:
     N_FFT = 1024            # Window size
     HOP_LENGTH = 512        # Length samples between windows
     N_MELS = 128            # Number of Mel filters
+    
     BUFFER = np.array(np.zeros(SAMPLING_RATE*int(DURATION)*2, dtype=float))   # Buffer for recording audio
     SPECTROGRAM = []
 
@@ -91,11 +95,74 @@ class Audio:
         sd.wait()
         write("example.wav", Audio.SAMPLING_RATE, sampled_audio.astype(np.float))
         Audio.BUFFER = np.concatenate((np.squeeze(sampled_audio), Audio.BUFFER[0:int(self.DURATION)*2*self.SAMPLING_RATE-len(sampled_audio)]))
-        return None    
+        return None
+
+    def input_stream_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
+        """Callback function for live audio recording.
+
+        Args:
+            indata (np.ndarray): audio data
+            frames (int): number of samples returned
+            time: sample time
+            status: data status
+        """
+        # check for error status
+        if status:
+            print(status, file=sys.stderr)
+
+        # add audio data to buffer
+        self.buffer.extend(indata.copy())
+    
+    def start_live_record(self, device=None, buffer_duration=3):
+        """Starts live audio recording from input device.
+
+        Args:
+            device (int): Input device. Defaults to None.
+            buffer_duration (int): Buffer duration in seconds. Defaults to 3.
+        """
+        # create audio buffer queue
+        self.buffer_size = buffer_duration * self.SAMPLING_RATE
+        self.buffer = collections.deque(maxlen=self.buffer_size)
+
+        # create audio input stream
+        self.stream = sd.InputStream(
+            samplerate=self.SAMPLING_RATE,
+            blocksize=int(self.SAMPLING_RATE / 10),
+            device=device,
+            callback=self.input_stream_callback
+        )
+
+        # start stream
+        self.stream.start()
+
+    def get_audio_sample(self) -> np.ndarray:
+        """Returns current audio sample from the live audio buffer.
+
+        Returns:
+            np.ndarray: audio sample as numpy array
+        """
+        # wait until buffer is full
+        while len(self.buffer) != self.buffer_size:
+            pass
+
+        # return sample
+        return np.array(list(self.buffer))
+
 
 if __name__ == "__main__":
+    pass
 
-    path = 'C:/UCI/Senior Year/159_senior_design/output.wav'
+    # audio = Audio()
+    # audio.start_live_record()
+
+    # spectrogram = []
+
+    # sample = audio.get_audio_sample()
+    # sample = librosa.to_mono([sample[:, 0], sample[:, 1]])
+
+    # spectrogram.append(Audio.gen_spec(sample))
+
+    # path = 'C:/UCI/Senior Year/159_senior_design/output.wav'
     # record, write, and load audio
     # signal = Audio.record_sample()
     # #print(signal)
@@ -110,23 +177,24 @@ if __name__ == "__main__":
     # plt.colorbar(format='%+2.0f dB')
     # plt.show()
 
-    import librosa.display
-    import matplotlib.pyplot as plt
-    model_path = './saved_models'
-    model = load_model(model_path, compile = True)
+    # import librosa.display
+    # import matplotlib.pyplot as plt
+    # from tensorflow.keras.models import load_model
+    # model_path = './saved_models'
+    # model = load_model(model_path, compile = True)
 
-    while True:
-        Audio.record_sample_mem()
-        spectrogram = Audio.gen_spec(Audio.BUFFER[3*44100:44100*3*2])
-        predictions = model.predict(spectrogram)
-        print(predictions)
-        Audio.SPECTROGRAM = np.append(spectrogram)
-        print(np.shape(spectrogram))
+    # while True:
+    #     Audio.record_sample_mem()
+    #     spectrogram = Audio.gen_spec(Audio.BUFFER[3*44100:44100*3*2])
+    #     predictions = model.predict(spectrogram)
+    #     print(predictions)
+    #     Audio.SPECTROGRAM = np.append(spectrogram)
+    #     print(np.shape(spectrogram))
 
-        # display mel-spectrogram
-        librosa.display.specshow(spectrogram, sr=44100, hop_length=512, x_axis='time', y_axis='mel') #display with frequency axis in mel scale
-        plt.colorbar(format='%+2.0f dB')
-        plt.show()
+    #     # display mel-spectrogram
+    #     librosa.display.specshow(spectrogram, sr=44100, hop_length=512, x_axis='time', y_axis='mel') #display with frequency axis in mel scale
+    #     plt.colorbar(format='%+2.0f dB')
+    #     plt.show()
 
     # generate spectrograms for all folders in train
     # import os
