@@ -187,10 +187,42 @@ class Network:
         models.save_model(self.model, save_path + model_name)
         print('Model saved')
 
+    def representative_data_gen(self):
+        """Generator for test data used to adjust dynamic range of the quantizer.
+
+        Yields:
+            np.ndarray: training set samples
+        """
+        # iterate over 100 samples in training set
+        for sample in tf.data.Dataset.from_tensor_slices(self.train_x).batch(1).take(100):
+            yield [sample]
+
+    
+    def convert_to_tflite(self, model_path: str) -> None:
+        """Convert model to tensorflow lite model.
+
+        Args:
+            model_path (str): saved model directory path
+        """
+        # Convert the model
+        converter = tf.lite.TFLiteConverter.from_saved_model(model_path)
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        converter.representative_dataset = self.representative_data_gen
+        # Ensure that if any ops can't be quantized, the converter throws an error
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+        # Set the input and output tensors to uint8 (APIs added in r2.3)
+        converter.inference_input_type = tf.uint8
+        converter.inference_output_type = tf.uint8
+        tflite_model = converter.convert()
+
+        # Save the model.
+        with open(model_path + 'saved_model.tflite', 'wb') as f:
+            f.write(tflite_model)
+
 
 if __name__ == "__main__":
-    #training_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/train'
-    #validation_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/validation'
+    # training_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/train'
+    # validation_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/validation'
     
     dataset_file_path = './dataset/'
 
@@ -209,3 +241,4 @@ if __name__ == "__main__":
         log_name='3conv_drop_2_small_batch_44pool_32dense_3k'
     )
     network.save_model(model_name=network.model_name)
+    network.convert_to_tflite('./saved_models/' + network.model_name + '/')
