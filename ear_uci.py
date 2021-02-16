@@ -12,7 +12,7 @@ from audio import Audio
 account_sid = os.getenv("TWILIO_ACCOUNT_SID")
 auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 client = Client(account_sid, auth_token)
-twilio_num = '+12155155286'
+twilio_num = os.getenv("TWILIO_PHONE_NUM")
 user_num = os.getenv("PHONE_NUM")
 
 
