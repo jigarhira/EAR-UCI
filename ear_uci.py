@@ -6,6 +6,8 @@ from tensorflow.python.keras.backend import switch
 from twilio.rest import Client
 import tensorflow as tf
 from tensorflow.keras.models import load_model
+from pycoral.utils import edgetpu
+from pycoral.adapters import common, classify
 
 from audio import Audio
 
@@ -18,8 +20,10 @@ user_num = os.getenv("PHONE_NUM")
 
 def main():
     # load model
-    model_path = './saved_models/3conv_drop_2_small_batch_44pool_32dense_20210209-113537/'
-    model = load_model(model_path, compile = True)
+    model_path = r'C:\UCI\Senior Year\Winter_2021\159_senior_design\EAR-UCI\saved_models\3conv_drop_2_small_batch_44pool_32dense_3k_20210217-223630\saved_model.tflite'
+    # model = load_model(model_path, compile = True)
+    interpreter = edgetpu.make_interpreter(model_path)
+    interpreter.allocate_tensors()
 
     # start microphone recording
     audio = Audio()
@@ -29,7 +33,7 @@ def main():
     count = 0
     # prediction loop
     while True:
-        time_start = time.time()
+        # time_start = time.time()
 
         # get audio sample and convert to mono
         sample = audio.get_audio_sample()
@@ -43,8 +47,12 @@ def main():
         spectrogram = np.expand_dims(spectrogram, axis=0)
         spectrogram = np.expand_dims(spectrogram, axis=-1)
 
+        common.set_input(interpreter, image)
+        interpreter.invoke()
+        prediction = classify.get_classes(interpreter, top_k=1)
+
         # generate prediction
-        prediction = model.predict(spectrogram, batch_size=1)
+        # prediction = model.predict(spectrogram, batch_size=1)
         prediction = np.argmax(prediction, axis=1)
 
         # increment counter if current prediction matches last prediction
@@ -60,27 +68,30 @@ def main():
             if(prediction == 1):
                 message = client.messages \
                     .create(
-                        messaging_service_sid='MG5731096200843a89dfe032f3e807ffe9',
+                        # messaging_service_sid='SM724163fa074e42c8a1eac0ea276310af',
                         body="EAR has detected glass breaking.",
+                        from_=twilio_num,
                         to=user_num
                     )
             elif(prediction == 2):
                 message = client.messages \
                     .create(
-                        messaging_service_sid='MG5731096200843a89dfe032f3e807ffe9',
+                        # messaging_service_sid='SM724163fa074e42c8a1eac0ea276310af',
                         body="EAR has detected a gunshot.",
+                        from_=twilio_num,
                         to=user_num
                     )
             elif(prediction == 3):
                 message = client.messages \
                     .create(
-                        messaging_service_sid='MG5731096200843a89dfe032f3e807ffe9',
+                        # messaging_service_sid='SM724163fa074e42c8a1eac0ea276310af',
                         body="EAR has detected a scream.",
+                        from_=twilio_num,
                         to=user_num
                     )                    
 
         print(prediction)
-        print('loop time: ' + str(time.time() - time_start))
+        # print('loop time: ' + str(time.time() - time_start))
 
 
 

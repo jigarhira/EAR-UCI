@@ -145,7 +145,7 @@ class Network:
         # display model summary
         self.model.summary()
 
-    def train_model(self, batch_size=160, epochs=20, log_name='') -> None:
+    def train_model(self, batch_size=160, epochs=1, log_name='') -> None:
         """Optimizes the model, sets up TensorBoard output, and trains the model
 
         """
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     # training_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/train'
     # validation_data_path = 'C:/Users/Ian/EAR-UCI-Dataset/Spectrograms/validation'
     
-    dataset_file_path = './dataset/'
+    dataset_file_path = r'C:\UCI\Senior Year\Winter_2021\159_senior_design'
 
     network = Network()
     network.load_dataset(dataset_file_path)
