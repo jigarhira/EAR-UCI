@@ -20,7 +20,7 @@ user_num = os.getenv("PHONE_NUM")
 
 def main():
     # load model
-    model_path = r'C:\UCI\Senior Year\Winter_2021\159_senior_design\EAR-UCI\saved_models\3conv_drop_2_small_batch_44pool_32dense_3k_20210217-223630\saved_model.tflite'
+    model_path = '/home/mendel/coral/EAR-UCI/saved_models/3conv_drop_2_small_batch_44pool_32dense_3k_20210217-223630/saved_model.tflite'
     # model = load_model(model_path, compile = True)
     interpreter = edgetpu.make_interpreter(model_path)
     interpreter.allocate_tensors()
@@ -47,13 +47,13 @@ def main():
         spectrogram = np.expand_dims(spectrogram, axis=0)
         spectrogram = np.expand_dims(spectrogram, axis=-1)
 
-        common.set_input(interpreter, image)
-        interpreter.invoke()
-        prediction = classify.get_classes(interpreter, top_k=1)
-
         # generate prediction
         # prediction = model.predict(spectrogram, batch_size=1)
-        prediction = np.argmax(prediction, axis=1)
+        common.set_input(interpreter, spectrogram)
+        interpreter.invoke()
+        prediction = classify.get_classes(interpreter, top_k=1)
+        # prediction = np.argmax(prediction, axis=1)
+        print(prediction)
 
         # increment counter if current prediction matches last prediction
         if(prediction == last_prediction):
