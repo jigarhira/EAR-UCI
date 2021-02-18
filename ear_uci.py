@@ -83,8 +83,5 @@ def main():
         print('loop time: ' + str(time.time() - time_start))
 
 
-
-
-
 if __name__ == '__main__':
     main()
