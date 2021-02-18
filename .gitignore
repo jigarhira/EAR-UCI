@@ -2,7 +2,7 @@
 logs/
 LOGS/
 dataset/
-saved_models/
+#saved_models/
 
 # Visual Studio Code
 .vscode/
@@ -65,7 +65,7 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+#*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
