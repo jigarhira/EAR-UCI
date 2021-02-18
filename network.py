@@ -204,20 +204,21 @@ class Network:
         Args:
             model_path (str): saved model directory path
         """
+        print('Converting saved model to quantized tflite model')
         # Convert the model
         converter = tf.lite.TFLiteConverter.from_saved_model(model_path)
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
         converter.representative_dataset = self.representative_data_gen
         # Ensure that if any ops can't be quantized, the converter throws an error
         converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-        # Set the input and output tensors to uint8 (APIs added in r2.3)
-        converter.inference_input_type = tf.uint8
+        # Set the output tensor to uint8
         converter.inference_output_type = tf.uint8
         tflite_model = converter.convert()
 
         # Save the model.
         with open(model_path + 'saved_model.tflite', 'wb') as f:
             f.write(tflite_model)
+        print('Saved quantized tflite model')
 
 
 if __name__ == "__main__":
