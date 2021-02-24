@@ -113,7 +113,7 @@ class Audio:
         # add audio data to buffer
         self.buffer.extend(indata.copy())
     
-    def start_live_record(self, device="8888:1234", buffer_duration=3):
+    def start_live_record(self, device=2, buffer_duration=3):
         """Starts live audio recording from input device.
 
         Args:
