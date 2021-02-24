@@ -9,7 +9,10 @@ from audio import Audio
 def main():
     # load model
     model_path = './saved_models/3conv_drop_2_small_batch_44pool_32dense_20210209-113537/saved_model_edgetpu.tflite'
-    interpreter = tflite.Interpreter(model_path=model_path, experimental_delegates=[tflite.load_delegate('libedgetpu.so.1')])
+    interpreter = tflite.Interpreter(
+        model_path=model_path,
+        experimental_delegates=[tflite.load_delegate('libedgetpu.so.1')]
+    )
     interpreter.allocate_tensors()
 
     # get input and output information
